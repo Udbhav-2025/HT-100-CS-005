@@ -1,0 +1,28 @@
+--- Email 1 ---
+Subject: Urgent: Password Reset Required
+From : security-update@gma1l-support.com
+Safety Score: "40"
+Label : "Suspicious"
+Reasons:
+ - Suspicious phrase found: 'password reset'
+ - Unknown or untrusted domain: gma1l-support.com    
+
+
+--- Email 2 ---
+Subject: Monthly Newsletter
+From   : info@gmail.com
+Safety Score: 100
+Label       : Safe
+Reasons: 
+
+
+
+--- Email 3 ---
+Subject: Verify your account to receive payment
+From   : rewards@free-gifts.biz
+Safety Score: 20
+Label       : Malicious
+Reasons:
+ - Suspicious phrase found: 'verify your account'
+ - Unknown or untrusted domain: free-gifts.biz
+ - Email contains many links

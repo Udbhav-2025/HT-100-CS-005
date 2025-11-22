@@ -1,0 +1,176 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Phish Hunter - Email Safety Analyzer</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f0f2f5;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 650px;
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            margin: auto;
+        }
+
+        input,
+        textarea {
+            width: 100%;
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+
+        button {
+            background: #0066ff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            margin-top: 15px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #0047b3;
+        }
+
+        /* Result Box */
+        .result-box {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 5px solid #ccc;
+        }
+
+        /* Circle Indicator */
+        .indicator {
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 16px;
+            margin: auto;
+            margin-bottom: 15px;
+        }
+
+        .indicator.safe {
+            background: #4caf50;
+        }
+
+        /* Green */
+        .indicator.suspicious {
+            background: #ffc107;
+            color: black;
+        }
+
+        /* Yellow */
+        .indicator.malicious {
+            background: #f44336;
+        }
+
+        /* Red */
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h2>Phish Hunter - Email Safety Analyzer</h2>
+        <label>Subject:</label>
+        <input type="text" id="subject">
+
+        <label>Body:</label>
+        <textarea id="body" rows="5"></textarea>
+
+        <label>From Email:</label>
+        <input type="text" id="fromEmail">
+
+        <label>Number of Links:</label>
+        <input type="number" id="numLinks" min="0">
+
+        <button onclick="analyzeEmail()">Analyze Email</button>
+
+        <!-- Result Box -->
+        <div id="outputContainer" style="display:none">
+            <div id="indicatorCircle"></div>
+            <div id="outputText" class="result-box"></div>
+        </div>
+    </div>
+
+    <script>
+        const suspiciousKeywords = [
+            "urgent payment", "password reset", "verify your account",
+            "account will be locked", "click the link below", "update your bank details"
+        ];
+
+        const trustedDomains = ["gmail.com", "yahoo.com", "outlook.com", "mybank.com"];
+
+        function analyzeEmail() {
+            let subject = document.getElementById("subject").value;
+            let body = document.getElementById("body").value;
+            let fromEmail = document.getElementById("fromEmail").value;
+            let numLinks = parseInt(document.getElementById("numLinks").value);
+
+            let score = 100;
+            let reasons = [];
+
+            let text = (subject + " " + body).toLowerCase();
+
+            // Intent Detection
+            for (let phrase of suspiciousKeywords) {
+                if (text.includes(phrase)) {
+                    score -= 30;
+                    reasons.push("Suspicious phrase found: '" + phrase + "'");
+                    break;
+                }
+            }
+
+            // Sender Check
+            let domain = fromEmail.split("@").pop();
+            if (!trustedDomains.includes(domain)) {
+                score -= 30;
+                reasons.push("Unknown or untrusted domain: " + domain);
+            }
+
+            // Links Check
+            if (numLinks > 2) {
+                score -= 20;
+                reasons.push("Email contains many links");
+            }
+
+            // Final Label
+            let label = score >= 70 ? "Safe" : score >= 40 ? "Suspicious" : "Malicious";
+
+            // Circle Color
+            let circleClass = label.toLowerCase();
+
+            // Output
+            document.getElementById("indicatorCircle").innerHTML = `<div class="indicator ${circleClass}">${label}</div>`;
+            document.getElementById("outputText").innerHTML = `
+        <strong>Safety Score:</strong> ${score}<br>
+        <strong>Status:</strong> ${label}<br><br>
+        <strong>Reasons:</strong><br>
+        ${reasons.map(r => "- " + r).join("<br>") || "No issues found. Email looks safe!"}
+      `;
+
+            // Show result section
+            document.getElementById("outputContainer").style.display = "block";
+        }
+    </script>
+</body>
+
+</html>

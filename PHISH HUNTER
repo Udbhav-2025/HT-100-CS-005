@@ -1,0 +1,98 @@
+# ------------------------------
+# PHISH HUNTER - INTELLIGENT EMAIL GUARD
+# ------------------------------
+
+# 1. List of suspicious phrases (for intent detection)
+suspicious_keywords = [
+    "urgent payment",
+    "password reset",
+    "verify your account",
+    "account will be locked",
+    "click the link below",
+    "update your bank details"
+]
+
+# 2. List of trusted domains (for sender verification)
+trusted_domains = [
+    "gmail.com",
+    "yahoo.com",
+    "outlook.com",
+    "mybank.com"
+]
+
+# 3. Function that checks one email and returns score + label + reasons
+
+
+def analyze_email(email):
+    score = 100               # start with full safety score
+    reasons = []              # empty list to store why we cut marks
+
+    # Join subject and body, and convert to lowercase
+    text = (email["subject"] + " " + email["body"]).lower()
+
+    # ---- Intent Detection ----
+    for phrase in suspicious_keywords:
+        if phrase in text:
+            score -= 30
+            reasons.append(f"Suspicious phrase found: '{phrase}'")
+            break  # stop after first match
+
+    # ---- Sender Verification ----
+    sender = email["from"]
+    domain = sender.split("@")[-1]  # take part after @
+
+    if domain not in trusted_domains:
+        score -= 30
+        reasons.append(f"Unknown or untrusted domain: {domain}")
+
+    # ---- Links Check ----
+    if email["num_links"] > 2:
+        score -= 20
+        reasons.append("Email contains many links")
+
+    # ---- Final Label from score ----
+    if score >= 70:
+        label = "Safe"
+    elif score >= 40:
+        label = "Suspicious"
+    else:
+        label = "Malicious"
+
+    return score, label, reasons
+
+
+# 4. Example emails to test our system
+emails = [
+    {
+        "subject": "Urgent: Password Reset Required",
+        "body": "Dear user, your account will be locked. Click the link below to reset now.",
+        "from": "security-update@gma1l-support.com",
+        "num_links": 1
+    },
+    {
+        "subject": "Monthly Newsletter",
+        "body": "Here is your monthly news and tips. Thank you for staying with us.",
+        "from": "info@gmail.com",
+        "num_links": 1
+    },
+    {
+        "subject": "Verify your account to receive payment",
+        "body": "Update your bank details to receive the prize.",
+        "from": "rewards@free-gifts.biz",
+        "num_links": 3
+    }
+]
+
+# 5. Run analyzer on each email and print results
+for i, email in enumerate(emails, start=1):
+    print(f"\n--- Email {i} ---")
+    print("Subject:", email["subject"])
+    print("From   :", email["from"])
+
+    score, label, reasons = analyze_email(email)
+
+    print("Safety Score:", score)
+    print("Label       :", label)
+    print("Reasons:")
+    for r in reasons:
+        print(" -", r)
